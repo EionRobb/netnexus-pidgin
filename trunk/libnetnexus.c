@@ -1,0 +1,512 @@
+#include <glib.h>
+
+#include <errno.h>
+#include <string.h>
+#include <glib/gi18n.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#ifndef G_GNUC_NULL_TERMINATED
+#	if __GNUC__ >= 4
+#		define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
+#	else
+#		define G_GNUC_NULL_TERMINATED
+#	endif /* __GNUC__ >= 4 */
+#endif /* G_GNUC_NULL_TERMINATED */
+
+#ifdef _WIN32
+#	include "win32dep.h"
+#	define dlopen(a,b) LoadLibrary(a)
+#	define RTLD_LAZY
+#	define dlsym(a,b) GetProcAddress(a,b)
+#	define dlclose(a) FreeLibrary(a)
+#else
+#	include <arpa/inet.h>
+#	include <dlfcn.h>
+#	include <netinet/in.h>
+#	include <sys/socket.h>
+#endif
+
+#ifndef PURPLE_PLUGINS
+#	define PURPLE_PLUGINS
+#endif
+
+#include "accountopt.h"
+#include "cipher.h"
+#include "connection.h"
+#include "debug.h"
+#include "dnsquery.h"
+#include "proxy.h"
+#include "prpl.h"
+#include "request.h"
+#include "sslconn.h"
+#include "version.h"
+#include "xmlnode.h"
+
+typedef struct _NetNexusConnection {
+	PurpleAccount *account;
+	PurpleConnection *pc;
+	
+	gchar *clientId;
+	gchar *gameId;
+	
+	PurpleProxyConnectData *conn;
+	int fd;
+	guint input_watcher;
+	GString *rx_buf;
+	
+	PurpleUtilFetchUrlData *login_conn;
+} NetNexusConnection;
+
+void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
+{
+	if (g_str_equal(node->name, "ping"))
+	{
+		//handle ping
+		//<ping source="client" ct="1251973170" st="1251973171218"/>
+	} else if (g_str_equal(node->name, "userlist")) {
+		//userlist
+	} else if (g_str_equal(node->name, "join")) {
+		//joined a room
+	} else if (g_str_equal(node->name, "leave")) {
+		//left a room
+	} else if (g_str_equal(node->name, "message")) {
+		//received a message
+		//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
+	} else if (g_str_equal(node->name, "state")) {
+		//<state name="Eion" tags="" channels="">Welcome to the netnexus chat room.</state>		
+	}
+}
+
+void nn_data_in(gpointer data, gint source, PurpleInputCondition cond)
+{
+	NetNexusConnection *nnc = data;
+	gchar buf[4096];
+	ssize_t len;
+	xmlnode *node;
+	
+	len = recv(source, buf, sizeof(buf) - 1, 0);
+
+	if (len < 0)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+			// Try again later
+			return;
+		}
+
+		close(source);
+		purple_input_remove(nnc->input_watcher);
+		if (nnc->rx_buf)
+			g_string_free(nnc->rx_buf, TRUE);
+			
+		//TODO handle disconnection here
+		
+		return;
+	}
+
+	if (len > 0)
+	{
+		if (nnc->rx_buf == NULL)
+			nnc->rx_buf = g_string_new("");
+		
+		g_string_append_len(nnc->rx_buf, buf, len);
+
+		if (buf[len-1] != '\0')
+		{
+			// Wait for more data before processing
+			return;
+		}
+	}
+	
+	//All data received
+	//parse data
+	
+	purple_debug_info("netnexus", "received: %s\n", nnc->rx_buf->str);
+	node = xmlnode_from_str(nnc->rx_buf->str, nnc->rx_buf->len);
+	g_string_free(nnc->rx_buf, TRUE);
+	nnc->rx_buf = NULL;
+	
+	nn_process_xml(nnc, node);
+}
+
+gint nn_char_out(NetNexusConnection *nnc, gchar *message_format, ...)
+{
+	va_list args;
+	gchar* message;
+	
+	va_start(args, message_format);
+	message = g_strdup_vprintf(message_format, args);
+	va_end(args);
+	
+	purple_debug_info("netnexus", "sending: %s\n", message);
+	
+	return write(nnc->fd, message, strlen(message)+1);
+}
+
+gint nn_xml_out(NetNexusConnection *nnc, xmlnode *node)
+{
+	gchar *xml;
+	gint ret;
+	
+	xml = xmlnode_to_str(node, NULL);
+	ret = nn_char_out(nnc, xml);
+	g_free(xml);
+	
+	return ret;
+}
+
+void nn_set_status(PurpleAccount *account, PurpleStatus *status)
+{
+	
+}
+
+void nn_send_xml(NetNexusConnection *nnc, xmlnode *node)//, PurpleCallback *callback, gpointer data)
+{
+	gint returnint;
+	if (!g_str_equal(node->name, "msg"))
+	{
+		xmlnode *root = xmlnode_new("msg");
+		xmlnode_insert_child(root, node);
+		returnint = nn_char_out(nnc, xmlnode_to_str(root, NULL));
+		root->child = NULL;
+		root->lastchild = NULL;
+		xmlnode_free(root);
+	} 
+}
+
+void nn_join_chat (PurpleConnection *pc, GHashTable *components)
+{
+	
+}
+
+void nn_chat_leave(PurpleConnection *pc, int id)
+{
+	
+}
+
+int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags)
+{
+	
+}
+
+PurpleRoomlist *nn_get_roomlist(PurpleConnection *gc)
+{
+	
+}
+
+void nn_ping(PurpleConnection *pc)
+{
+	NetNexusConnection *nnc;
+	time_t timestamp;
+	gchar *timestamp_char;
+	
+	nnc = pc->proto_data;
+	
+	timestamp = time(NULL);
+	timestamp_char = g_strdup_printf("%ld", timestamp);
+	
+	xmlnode *pingnode = xmlnode_new("ping");
+	xmlnode_set_attrib(pingnode, "source", "client");
+	xmlnode_set_attrib(pingnode, "ct", timestamp_char);
+	
+	nn_send_xml(nnc, pingnode);//, nn_pong, GINT_TO_POINTER(timestamp));
+	
+	g_free(timestamp_char);
+}
+
+void nn_login_cb(gpointer data, gint source, const gchar *error_message)
+{
+	NetNexusConnection *nnc = data;
+	if (error_message)
+	{
+		purple_debug_error("netnexus", "login_cb %s\n", error_message);
+		purple_connection_error_reason(nnc->pc, PURPLE_CONNECTION_ERROR_NETWORK_ERROR, _("Server closed the connection."));
+		return;
+	}
+
+	purple_debug_info("nexnexus", "login_cb\n");
+	nnc->fd = source;
+	
+	purple_connection_set_state(nnc->pc, PURPLE_CONNECTED);
+	purple_connection_update_progress(nnc->pc, _("Connected"), 4, 4);
+	
+	nn_char_out(nnc, "<connect clientId='%s' gameId='%s'/>", nnc->clientId, nnc->gameId);
+	
+	nnc->input_watcher = purple_input_add(nnc->fd, PURPLE_INPUT_READ, nn_data_in, nnc);
+}
+
+void nn_http_login2_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
+{
+	NetNexusConnection *nnc;
+	xmlnode *response;
+	xmlnode *gidnode, *cidnode;
+	gchar *gid, *cid;
+	
+	nnc = user_data;
+	nnc->login_conn = NULL;
+	
+	response = xmlnode_from_str(url_text, len);
+	
+	//TODO check that there's not an error
+	
+	gidnode = xmlnode_get_child(response, "gid");
+	cidnode = xmlnode_get_child(response, "cid");
+	
+	gid = xmlnode_get_data_unescaped(gidnode);
+	cid = xmlnode_get_data_unescaped(cidnode);
+	
+	nnc->clientId = cid;
+	nnc->gameId = gid;
+	
+	xmlnode_free(response);
+	
+	purple_connection_set_state(nnc->pc, PURPLE_CONNECTING);
+	purple_connection_update_progress(nnc->pc, _("Connecting to chat server"), 3, 4);
+	
+	purple_proxy_connect(nnc, nnc->account, "ugp.netnexus.com", 9867, nn_login_cb, nnc);
+}
+
+void nn_http_login_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
+{
+	PurpleCipher *cipher;
+	PurpleCipherContext *context;
+	gchar md5Hash[33];
+	NetNexusConnection *nnc;
+	xmlnode *response, *keynode;
+	gchar *key;
+	gchar *user, *pass;
+	gchar *url;
+	gchar *unenc;
+	
+	nnc = user_data;
+	nnc->login_conn = NULL;
+	
+	purple_connection_set_state(nnc->pc, PURPLE_CONNECTING);
+	purple_connection_update_progress(nnc->pc, _("Authenticating"), 2, 3);
+	
+	response = xmlnode_from_str(url_text, len);
+	
+	//TODO check that there's not an error
+	
+	keynode = xmlnode_get_child(response, "key");
+	
+	key = xmlnode_get_data_unescaped(keynode);
+	user = g_strdup(purple_url_encode(nnc->account->username));
+	
+	cipher = purple_ciphers_find_cipher("md5");
+	context = purple_cipher_context_new(cipher, NULL);
+
+	unenc = g_strdup_printf("%s%s", nnc->account->password, key);
+	purple_cipher_context_append(context, (guchar *)unenc, strlen(unenc));
+	purple_cipher_context_digest_to_str(context, sizeof(md5Hash), md5Hash, NULL);
+	purple_cipher_context_destroy(context);
+	pass = g_strdup(purple_url_encode(md5Hash));
+	
+	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=auth&user=%s&pass=%s", user, pass);
+	nnc->login_conn = purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_http_login2_cb, nnc);
+	
+	xmlnode_free(response);
+	g_free(key);
+	g_free(url);
+	g_free(user);
+	g_free(pass);
+	g_free(unenc);
+}
+
+void nn_login(PurpleAccount *account)
+{
+	PurpleConnection *pc;
+	NetNexusConnection *nnc;
+	gchar *url;
+	
+	pc = purple_account_get_connection(account);
+	
+	nnc = g_new0(NetNexusConnection, 1);
+	nnc->account = account;
+	nnc->pc = pc;
+	pc->proto_data = nnc;
+	
+	purple_connection_set_state(pc, PURPLE_CONNECTING);
+	purple_connection_update_progress(pc, _("Connecting to login server"), 1, 3);
+	
+	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=start&user=%s", purple_url_encode(account->username));
+	nnc->login_conn = purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_http_login_cb, nnc);
+	
+	g_free(url);
+}
+
+void nn_close(PurpleAccount *account)
+{
+	PurpleConnection *pc;
+	NetNexusConnection *nnc;
+	
+	pc = purple_account_get_connection(account);
+	nnc = pc->proto_data;
+	
+	if (!nnc)
+		return;
+	
+	nn_char_out(nnc, "<msg><close>Quit</close></msg>");
+	
+	if (nnc->login_conn)
+		purple_util_fetch_url_cancel(nnc->login_conn);
+	
+	close(nnc->fd);
+	purple_input_remove(nnc->input_watcher);
+	g_string_free(nnc->rx_buf, TRUE);
+	
+	g_free(nnc->clientId);
+	g_free(nnc->gameId);
+	g_free(nnc);
+	
+}
+
+static const char *nn_list_icon(PurpleAccount *account, PurpleBuddy *buddy)
+{
+	return "netnexus";
+}
+
+static GList *nn_statuses(PurpleAccount *account)
+{
+	GList *types = NULL;
+	PurpleStatusType *status;
+	
+	status = purple_status_type_new_full(PURPLE_STATUS_AVAILABLE, NULL, NULL, TRUE, TRUE, FALSE);
+	types = g_list_append(types, status);
+	
+	//afk
+	status = purple_status_type_new_full(PURPLE_STATUS_AWAY, NULL, NULL, TRUE, TRUE, FALSE);
+	types = g_list_append(types, status);
+
+	status = purple_status_type_new_full(PURPLE_STATUS_OFFLINE, NULL, NULL, TRUE, TRUE, FALSE);
+	types = g_list_append(types, status);
+
+	return types;
+}
+
+static gboolean plugin_load(PurplePlugin *plugin)
+{
+	return TRUE;
+}
+
+static gboolean plugin_unload(PurplePlugin *plugin)
+{
+	return TRUE;
+}
+
+static void plugin_init(PurplePlugin *plugin)
+{
+	PurpleAccountOption *option;
+	PurplePluginInfo *info = plugin->info;
+	PurplePluginProtocolInfo *prpl_info = info->extra_info;
+	
+	option = purple_account_option_bool_new(_("HTTP Connection Method"), "netnexus_http_connect", FALSE);
+	prpl_info->protocol_options = g_list_append(prpl_info->protocol_options, option);
+	
+}
+
+static PurplePluginProtocolInfo prpl_info = {
+	/* options */
+	OPT_PROTO_UNIQUE_CHATNAME,
+
+	NULL,                   /* user_splits */
+	NULL,                   /* protocol_options */
+	NO_BUDDY_ICONS          /* icon_spec */
+	/*{"jpg", 0, 0, 50, 50, -1, PURPLE_ICON_SCALE_SEND}*/, /* icon_spec */
+	nn_list_icon,           /* list_icon */
+	NULL,                   /* list_emblems */
+	NULL,                   /* status_text */
+	NULL,                   /* tooltip_text */
+	nn_statuses,            /* status_types */
+	NULL,                   /* blist_node_menu */
+	NULL,                   /* chat_info */
+	NULL,                   /* chat_info_defaults */
+	nn_login,               /* login */
+	nn_close,               /* close */
+	NULL,                   /* send_im */
+	NULL,                   /* set_info */
+	NULL,                   /* send_typing */
+	NULL,                   /* get_info */
+	nn_set_status,          /* set_status */
+	NULL,                   /* set_idle */
+	NULL,                   /* change_passwd */
+	NULL,                   /* add_buddy */
+	NULL,                   /* add_buddies */
+	NULL,                   /* remove_buddy */
+	NULL,                   /* remove_buddies */
+	NULL,                   /* add_permit */
+	NULL,                   /* add_deny */
+	NULL,                   /* rem_permit */
+	NULL,                   /* rem_deny */
+	NULL,                   /* set_permit_deny */
+	nn_join_chat,           /* join_chat */
+	NULL,                   /* reject chat invite */
+	NULL,                   /* get_chat_name */
+	NULL,                   /* chat_invite */
+	nn_chat_leave,          /* chat_leave */
+	NULL,                   /* chat_whisper */
+	nn_chat_send,           /* chat_send */
+	nn_ping,                /* keepalive */
+	NULL,                   /* register_user */
+	NULL,                   /* get_cb_info */
+	NULL,                   /* get_cb_away */
+	NULL,                   /* alias_buddy */
+	NULL,                   /* group_buddy */
+	NULL,                   /* rename_group */
+	NULL,                   /* buddy_free */
+	NULL,                   /* convo_closed */
+	purple_normalize_nocase,/* normalize */
+	NULL,                   /* set_buddy_icon */
+	NULL,                   /* remove_group */
+	NULL,                   /* get_cb_real_name */
+	NULL,                   /* set_chat_topic */
+	NULL,                   /* find_blist_chat */
+	nn_get_roomlist,        /* roomlist_get_list */
+	NULL,                   /* roomlist_cancel */
+	NULL,                   /* roomlist_expand_category */
+	NULL,                   /* can_receive_file */
+	NULL,                   /* send_file */
+	NULL,                   /* new_xfer */
+	NULL,                   /* offline_message */
+	NULL,                   /* whiteboard_prpl_ops */
+	NULL,//nn_char_out,            /* send_raw */
+	NULL,                   /* roomlist_room_serialize */
+	NULL,                   /* unregister_user */
+	NULL,                   /* send_attention */
+	NULL,                   /* attention_types */
+	sizeof(PurplePluginProtocolInfo), /* struct_size */
+	NULL,                   /* get_account_text_table */
+};
+
+static PurplePluginInfo info = {
+	PURPLE_PLUGIN_MAGIC,
+	2, /* major_version */
+	3, /* minor version */
+	PURPLE_PLUGIN_PROTOCOL, /* type */
+	NULL, /* ui_requirement */
+	0, /* flags */
+	NULL, /* dependencies */
+	PURPLE_PRIORITY_DEFAULT, /* priority */
+	"prpl-bigbrownchunx-netnexus", /* id */
+	"NetNexus Chat", /* name */
+	"0.1", /* version */
+	N_("NetNexus Chat Protocol Plugin"), /* summary */
+	N_("NetNexus Chat Protocol Plugin"), /* description */
+	"Eion Robb <eionrobb@gmail.com>", /* author */
+	"", /* homepage */
+	plugin_load, /* load */
+	plugin_unload, /* unload */
+	NULL, /* destroy */
+	NULL, /* ui_info */
+	&prpl_info, /* extra_info */
+	NULL, /* prefs_info */
+	NULL, /* actions */
+
+	/* padding */
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
+PURPLE_INIT_PLUGIN(okcupid, plugin_init, info);
