@@ -70,6 +70,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	
 	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
 	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
+	//<message type='whisper' to='IronSinew' from='Eion' tags='member'>test</message>
 	
 	type = xmlnode_get_attrib(node, "type");
 	to = xmlnode_get_attrib(node, "to");
@@ -83,6 +84,11 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_SYSTEM, message, time(NULL));
 		} else if (g_str_equal(type, "chat")) {
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, message, time(NULL));
+		} else if (g_str_equal(type, "whisper")) {
+			if (g_str_equal(purple_normalize_nocase(nnc->account, to), purple_normalize_nocase(nnc->account, purple_account_get_username(nnc->account))))
+			{
+				serv_got_im(nnc->pc, from, message, PURPLE_MESSAGE_RECV, time(NULL));
+			}
 		}
 	} else {
 		//Must be a global message. Display in all chats
@@ -117,7 +123,7 @@ void nn_process_userlist(NetNexusConnection *nnc, xmlnode *node)
 		if (strstr(tags, "admin"))
 			flags = PURPLE_CBFLAGS_OP;
 		else if (strstr(tags, "mod"))
-			flags = PURPLE_CBFLAGS_HALFOP
+			flags = PURPLE_CBFLAGS_HALFOP;
 		else if (strstr(tags, "vip"))
 			flags = PURPLE_CBFLAGS_VOICE;
 		else
@@ -301,6 +307,20 @@ int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessag
 	
 	//<msg><chat type="chat" channel="help">1</chat></msg>
 	nn_send_xml(pc->proto_data, chatnode);
+	
+	return 1;
+}
+
+int nn_send_im (PurpleConnection *pc, const char *who, const char *message, PurpleMessageFlags flags)
+{
+	//<whisper to="IronSinew">testing</whisper>
+	xmlnode *whispernode;
+	
+	whispernode = xmlnode_new("whisper");
+	xmlnode_set_attrib(whispernode, "to", who);
+	xmlnode_insert_data(whispernode, message, -1);
+	
+	nn_send_xml(pc->proto_data, whispernode);
 	
 	return 1;
 }
@@ -537,7 +557,7 @@ static PurplePluginProtocolInfo prpl_info = {
 	NULL,                   /* chat_info_defaults */
 	nn_login,               /* login */
 	nn_close,               /* close */
-	NULL,                   /* send_im */
+	nn_send_im,             /* send_im */
 	NULL,                   /* set_info */
 	NULL,                   /* send_typing */
 	NULL,                   /* get_info */
