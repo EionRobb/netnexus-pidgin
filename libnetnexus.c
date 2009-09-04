@@ -58,21 +58,101 @@ typedef struct _NetNexusConnection {
 	PurpleUtilFetchUrlData *login_conn;
 } NetNexusConnection;
 
+int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags);
+
+
+void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
+{
+	const gchar *to;
+	const gchar *from;
+	gchar *message;
+	const gchar *type;
+	
+	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
+	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
+	
+	type = xmlnode_get_attrib(node, "type");
+	to = xmlnode_get_attrib(node, "to");
+	from = xmlnode_get_attrib(node, "from");
+	message = xmlnode_get_data(node);
+	
+	if (to && *to)
+	{
+		if (g_str_equal(type, "notice"))
+		{
+			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_SYSTEM, message, time(NULL));
+		} else if (g_str_equal(type, "chat")) {
+			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, message, time(NULL));
+		}
+	} else {
+		//Must be a global message. Display in all chats
+	}
+	
+	g_free(message);
+	
+}
+
+void nn_process_userlist(NetNexusConnection *nnc, xmlnode *node)
+{
+	const gchar *channel;
+	const gchar *username;
+	const gchar *tags;
+	xmlnode *user;
+	PurpleConversation *conv;
+	PurpleConvChatBuddyFlags flags;
+	
+	//<userlist channel='main'><user name='BmXbrigate' tags='vip,afk'/><user name="elminster' tags='member,afk'/><user name='Eion' tags='admin'/></userlist>
+	channel = xmlnode_get_attrib(node, "channel");
+	
+	conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, nnc->account);
+	purple_conv_chat_clear_users(PURPLE_CONV_CHAT(conv));
+	
+	for(user = xmlnode_get_child(node, "user");
+		user;
+		user = xmlnode_get_next_twin(user))
+	{
+		//<user name='Eion' tags='admin'/>
+		username = xmlnode_get_attrib(user, "name");
+		tags = xmlnode_get_attrib(user, "tags");
+		if (strstr(tags, "admin"))
+			flags = PURPLE_CBFLAGS_OP;
+		else if (strstr(tags, "mod"))
+			flags = PURPLE_CBFLAGS_HALFOP
+		else if (strstr(tags, "vip"))
+			flags = PURPLE_CBFLAGS_VOICE;
+		else
+			flags = PURPLE_CBFLAGS_NONE;
+		purple_conv_chat_add_user(PURPLE_CONV_CHAT(conv), username, NULL, flags, FALSE);
+	}
+}
+
 void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
 {
+	const gchar *name;
+	
 	if (g_str_equal(node->name, "ping"))
 	{
 		//handle ping
-		//<ping source="client" ct="1251973170" st="1251973171218"/>
+		//<ping source="client" ct="1251973170123" st="1251973171218"/>
 	} else if (g_str_equal(node->name, "userlist")) {
 		//userlist
+		nn_process_userlist(nnc, node);
 	} else if (g_str_equal(node->name, "join")) {
 		//joined a room
+		//<join channel="main" success="true"/>
+		name = xmlnode_get_attrib(node, "channel");
+		serv_got_joined_chat(nnc->pc, g_str_hash(name), name);
+		//send /channel to the channel
+		//<chat type="chat" channel="main">/channel</chat>
+		nn_chat_send(nnc->pc, g_str_hash(name), "/room", PURPLE_MESSAGE_NO_LOG);
 	} else if (g_str_equal(node->name, "leave")) {
 		//left a room
+		name = xmlnode_get_attrib(node, "channel");
+		//<leave channel="help" success="true"/>
+		serv_got_chat_left(nnc->pc, g_str_hash(name));
 	} else if (g_str_equal(node->name, "message")) {
 		//received a message
-		//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
+		nn_process_message(nnc, node);
 	} else if (g_str_equal(node->name, "state")) {
 		//<state name="Eion" tags="" channels="">Welcome to the netnexus chat room.</state>		
 	}
@@ -127,6 +207,8 @@ void nn_data_in(gpointer data, gint source, PurpleInputCondition cond)
 	nnc->rx_buf = NULL;
 	
 	nn_process_xml(nnc, node);
+	
+	xmlnode_free(node);
 }
 
 gint nn_char_out(NetNexusConnection *nnc, gchar *message_format, ...)
@@ -174,19 +256,53 @@ void nn_send_xml(NetNexusConnection *nnc, xmlnode *node)//, PurpleCallback *call
 	} 
 }
 
-void nn_join_chat (PurpleConnection *pc, GHashTable *components)
+void nn_join_chat(PurpleConnection *pc, GHashTable *components)
 {
+	NetNexusConnection *nnc;
+	xmlnode *joinnode;
 	
+	nnc = pc->proto_data;
+	
+	joinnode = xmlnode_new("join");
+	xmlnode_set_attrib(joinnode, "channel", g_hash_table_lookup(components, "name"));
+	
+	nn_send_xml(nnc, joinnode);
 }
 
 void nn_chat_leave(PurpleConnection *pc, int id)
 {
+	//<leave channel='help'/>
+	PurpleConversation *conv;
+	const gchar *name;
+	xmlnode *leavenode;
 	
+	conv = purple_find_chat(pc, id);
+	name = purple_conversation_get_name(conv);
+	
+	leavenode = xmlnode_new("leave");
+	xmlnode_set_attrib(leavenode, "channel", name);
+	
+	nn_send_xml(pc->proto_data, leavenode);
 }
 
 int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags)
 {
+	PurpleConversation *conv;
+	const gchar *name;
+	xmlnode *chatnode;
 	
+	conv = purple_find_chat(pc, id);
+	name = purple_conversation_get_name(conv);
+	
+	chatnode = xmlnode_new("chat");
+	xmlnode_set_attrib(chatnode, "type", "chat");
+	xmlnode_set_attrib(chatnode, "channel", name);
+	xmlnode_insert_data(chatnode, message, -1);
+	
+	//<msg><chat type="chat" channel="help">1</chat></msg>
+	nn_send_xml(pc->proto_data, chatnode);
+	
+	return 1;
 }
 
 PurpleRoomlist *nn_get_roomlist(PurpleConnection *gc)
@@ -197,19 +313,19 @@ PurpleRoomlist *nn_get_roomlist(PurpleConnection *gc)
 void nn_ping(PurpleConnection *pc)
 {
 	NetNexusConnection *nnc;
-	time_t timestamp;
 	gchar *timestamp_char;
+	GTimeVal timestamp;
 	
 	nnc = pc->proto_data;
 	
-	timestamp = time(NULL);
-	timestamp_char = g_strdup_printf("%ld", timestamp);
+	g_get_current_time(&timestamp);
+	timestamp_char = g_strdup_printf("%ld%ld", timestamp.tv_sec, (timestamp.tv_usec/1000));
 	
 	xmlnode *pingnode = xmlnode_new("ping");
 	xmlnode_set_attrib(pingnode, "source", "client");
 	xmlnode_set_attrib(pingnode, "ct", timestamp_char);
 	
-	nn_send_xml(nnc, pingnode);//, nn_pong, GINT_TO_POINTER(timestamp));
+	nn_send_xml(nnc, pingnode);
 	
 	g_free(timestamp_char);
 }
@@ -335,12 +451,10 @@ void nn_login(PurpleAccount *account)
 	g_free(url);
 }
 
-void nn_close(PurpleAccount *account)
+void nn_close(PurpleConnection *pc)
 {
-	PurpleConnection *pc;
 	NetNexusConnection *nnc;
 	
-	pc = purple_account_get_connection(account);
 	nnc = pc->proto_data;
 	
 	if (!nnc)
