@@ -1,5 +1,7 @@
 #include <glib.h>
 
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <string.h>
 #include <glib/gi18n.h>
@@ -33,6 +35,7 @@
 
 #include "accountopt.h"
 #include "cipher.h"
+#include "cmds.h"
 #include "connection.h"
 #include "debug.h"
 #include "dnsquery.h"
@@ -73,6 +76,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
 	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
 	//<message type='whisper' to='IronSinew' from='Eion' tags='member'>test</message>
+	//<message type='emote' to='main' from='IronSinew' tags='admin'>IronSinew emotes</message>
 	
 	type = xmlnode_get_attrib(node, "type");
 	to = xmlnode_get_attrib(node, "to");
@@ -97,6 +101,11 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 			{
 				serv_got_im(nnc->pc, from, message, PURPLE_MESSAGE_RECV, time(NULL));
 			}
+		} else if (g_str_equal(type, "emote")) {
+			gchar *emote;
+			emote = g_strdup_printf("/me %s", (strchr(message, ' ')?strchr(message, ' '):""));
+			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, emote, time(NULL));
+			g_free(emote);
 		}
 	} else {
 		//Must be a global message. Display in all chats
@@ -281,6 +290,32 @@ void nn_join_chat(PurpleConnection *pc, GHashTable *components)
 	xmlnode_set_attrib(joinnode, "channel", g_hash_table_lookup(components, "name"));
 	
 	nn_send_xml(nnc, joinnode);
+}
+
+static PurpleCmdRet
+skype_cmd_emote(PurpleConversation *conv, const gchar *cmd, gchar **args, gchar **error, void *data)
+{
+	PurpleConnection *pc = NULL;
+	const gchar *channel = NULL;
+	xmlnode *chatnode;
+	
+	pc = purple_conversation_get_gc(conv);
+	channel = purple_conversation_get_name(conv);
+	
+	if (pc == NULL || channel == NULL)
+		return PURPLE_CMD_RET_FAILED;
+	
+	chatnode = xmlnode_new("chat");
+	xmlnode_set_attrib(chatnode, "type", "emote");
+	xmlnode_set_attrib(chatnode, "channel", channel);
+	if (args && args[0])
+	{
+		xmlnode_set_attrib(chatnode, "emote", args[0]);
+	}
+	
+	nn_send_xml(pc->proto_data, chatnode);
+	
+	return PURPLE_CMD_RET_OK;
 }
 
 void nn_chat_leave(PurpleConnection *pc, int id)
@@ -544,6 +579,17 @@ static void plugin_init(PurplePlugin *plugin)
 	
 	option = purple_account_option_bool_new(_("HTTP Connection Method"), "netnexus_http_connect", FALSE);
 	prpl_info->protocol_options = g_list_append(prpl_info->protocol_options, option);
+	
+	purple_cmd_register("me", "s", PURPLE_CMD_P_PRPL, PURPLE_CMD_FLAG_CHAT |
+						PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+						plugin->info->id, skype_cmd_emote,
+						_("me: Emote"),
+						NULL);
+	purple_cmd_register("emote", "s", PURPLE_CMD_P_PRPL, PURPLE_CMD_FLAG_CHAT |
+						PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+						plugin->info->id, skype_cmd_emote,
+						_("me: Emote"),
+						NULL);
 	
 }
 
