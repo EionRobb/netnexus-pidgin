@@ -63,6 +63,10 @@ typedef struct _NetNexusConnection {
 
 int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags);
 
+void nn_refresh_room(NetNexusConnection *nnc, const gchar *channel)
+{
+	nn_chat_send(nnc->pc, g_str_hash(channel), "/room", PURPLE_MESSAGE_NO_LOG);
+}
 
 void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 {
@@ -94,6 +98,8 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 		if (g_str_equal(type, "notice"))
 		{
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_SYSTEM, message, time(NULL));
+			//refresh the userlist
+			nn_refresh_room(nnc, to);
 		} else if (g_str_equal(type, "chat")) {
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, message, time(NULL));
 		} else if (g_str_equal(type, "whisper")) {
@@ -167,7 +173,7 @@ void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
 		serv_got_joined_chat(nnc->pc, g_str_hash(name), name);
 		//send /channel to the channel
 		//<chat type="chat" channel="main">/channel</chat>
-		nn_chat_send(nnc->pc, g_str_hash(name), "/room", PURPLE_MESSAGE_NO_LOG);
+		nn_refresh_room(nnc, name);
 	} else if (g_str_equal(node->name, "leave")) {
 		//left a room
 		name = xmlnode_get_attrib(node, "channel");
