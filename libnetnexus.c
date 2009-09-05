@@ -293,13 +293,13 @@ void nn_join_chat(PurpleConnection *pc, GHashTable *components)
 	nnc = pc->proto_data;
 	
 	joinnode = xmlnode_new("join");
-	xmlnode_set_attrib(joinnode, "channel", g_hash_table_lookup(components, "name"));
+	xmlnode_set_attrib(joinnode, "channel", g_hash_table_lookup(components, "channel"));
 	
 	nn_send_xml(nnc, joinnode);
 }
 
 static PurpleCmdRet
-skype_cmd_emote(PurpleConversation *conv, const gchar *cmd, gchar **args, gchar **error, void *data)
+nn_cmd_emote(PurpleConversation *conv, const gchar *cmd, gchar **args, gchar **error, void *data)
 {
 	PurpleConnection *pc = NULL;
 	const gchar *channel = NULL;
@@ -397,6 +397,34 @@ void nn_ping(PurpleConnection *pc)
 	nn_send_xml(nnc, pingnode);
 	
 	g_free(timestamp_char);
+}
+
+
+GList *
+nn_chat_info(PurpleConnection *pc)
+{
+	GList *m = NULL;
+	struct proto_chat_entry *pce;
+
+	pce = g_new0(struct proto_chat_entry, 1);
+	pce->label = _("Channel");
+	pce->identifier = "channel";
+	pce->required = TRUE;
+	m = g_list_append(m, pce);
+	
+	return m;
+}
+
+GHashTable *
+nn_chat_info_defaults(PurpleConnection *pc, const char *chat_name)
+{
+	GHashTable *defaults;
+	defaults = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, g_free);
+	if (chat_name != NULL)
+	{
+		g_hash_table_insert(defaults, "channel", g_strdup(chat_name));
+	}
+	return defaults;
 }
 
 void nn_login_cb(gpointer data, gint source, const gchar *error_message)
@@ -588,12 +616,12 @@ static void plugin_init(PurplePlugin *plugin)
 	
 	purple_cmd_register("me", "s", PURPLE_CMD_P_PRPL, PURPLE_CMD_FLAG_CHAT |
 						PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
-						plugin->info->id, skype_cmd_emote,
+						plugin->info->id, nn_cmd_emote,
 						_("me: Emote"),
 						NULL);
 	purple_cmd_register("emote", "s", PURPLE_CMD_P_PRPL, PURPLE_CMD_FLAG_CHAT |
 						PURPLE_CMD_FLAG_PRPL_ONLY | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
-						plugin->info->id, skype_cmd_emote,
+						plugin->info->id, nn_cmd_emote,
 						_("me: Emote"),
 						NULL);
 	
@@ -613,8 +641,8 @@ static PurplePluginProtocolInfo prpl_info = {
 	NULL,                   /* tooltip_text */
 	nn_statuses,            /* status_types */
 	NULL,                   /* blist_node_menu */
-	NULL,                   /* chat_info */
-	NULL,                   /* chat_info_defaults */
+	nn_chat_info,           /* chat_info */
+	nn_chat_info_defaults,  /* chat_info_defaults */
 	nn_login,               /* login */
 	nn_close,               /* close */
 	nn_send_im,             /* send_im */
