@@ -67,6 +67,8 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	const gchar *from;
 	gchar *message;
 	const gchar *type;
+	const gchar *success;
+	const gchar *error;
 	
 	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
 	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
@@ -75,9 +77,15 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	type = xmlnode_get_attrib(node, "type");
 	to = xmlnode_get_attrib(node, "to");
 	from = xmlnode_get_attrib(node, "from");
+	success = xmlnode_get_attrib(node, "success");
 	message = xmlnode_get_data(node);
 	
-	if (to && *to)
+	if (success && g_str_equal(success, "false"))
+	{
+		to = xmlnode_get_attrib(node, "channel");
+		error = xmlnode_get_attrib(node, "error");
+		serv_got_chat_in(nnc->pc, g_str_hash(to), "", PURPLE_MESSAGE_ERROR, error, time(NULL));
+	} else if (to && *to)
 	{
 		if (g_str_equal(type, "notice"))
 		{
