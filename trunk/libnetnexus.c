@@ -163,12 +163,15 @@ void nn_process_userlist(NetNexusConnection *nnc, xmlnode *node)
 	xmlnode *user;
 	PurpleConversation *conv;
 	PurpleConvChatBuddyFlags flags;
+	PurpleConvChatBuddy *buddy;
+	PurpleConversationUiOps *uiops;
 	
 	//<userlist channel='main'><user name='BmXbrigate' tags='vip,afk'/><user name="elminster' tags='member,afk'/><user name='Eion' tags='admin'/></userlist>
 	channel = xmlnode_get_attrib(node, "channel");
 	
 	conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, channel, nnc->account);
 	purple_conv_chat_clear_users(PURPLE_CONV_CHAT(conv));
+	uiops = purple_conversation_get_ui_ops(conv);
 	
 	for(user = xmlnode_get_child(node, "user");
 		user;
@@ -186,6 +189,22 @@ void nn_process_userlist(NetNexusConnection *nnc, xmlnode *node)
 		else
 			flags = PURPLE_CBFLAGS_NONE;
 		purple_conv_chat_add_user(PURPLE_CONV_CHAT(conv), username, NULL, flags, FALSE);
+		if (strstr(tags, "afk"))
+		{
+			purple_prpl_got_user_status(nnc->account, username, purple_primitive_get_id_from_type(PURPLE_STATUS_AWAY), NULL);
+			buddy = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(conv), username);
+			if (buddy != NULL)
+			{
+				g_free(buddy->alias);
+				buddy->alias = g_strdup_printf("%s (AFK)", username);
+				if (uiops && uiops->chat_rename_user)
+					uiops->chat_rename_user(conv, username, username, buddy->alias);
+				else if (uiops && uiops->chat_update_user)
+					uiops->chat_update_user(conv, username);
+			}
+		} else {
+			purple_prpl_got_user_status(nnc->account, username, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE), NULL);
+		}
 	}
 }
 
