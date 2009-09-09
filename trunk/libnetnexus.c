@@ -76,11 +76,14 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	const gchar *type;
 	const gchar *success;
 	const gchar *error;
+	GList *chats;
 	
 	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
 	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
 	//<message type='whisper' to='IronSinew' from='Eion' tags='member'>test</message>
 	//<message type='emote' to='main' from='IronSinew' tags='admin'>IronSinew emotes</message>
+	//<message type='notice' to='' from='' tags=''>Tarsonis21 is away (AFK due to inactivity)</message>
+	//<message type='system' to='' from='' tags=''>system message for Eion</message>
 	
 	type = xmlnode_get_attrib(node, "type");
 	to = xmlnode_get_attrib(node, "to");
@@ -100,21 +103,52 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_SYSTEM, message, time(NULL));
 			//refresh the userlist
 			nn_refresh_room(nnc, to);
+		} else if (g_str_equal(type, "broadcast"))
+		{
+			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_SYSTEM, message, time(NULL));
 		} else if (g_str_equal(type, "chat")) {
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, message, time(NULL));
 		} else if (g_str_equal(type, "whisper")) {
-			if (g_str_equal(purple_normalize_nocase(nnc->account, to), purple_normalize_nocase(nnc->account, purple_account_get_username(nnc->account))))
+			if (purple_utf8_strcasecmp(to, purple_account_get_username(nnc->account)) == 0)
 			{
 				serv_got_im(nnc->pc, from, message, PURPLE_MESSAGE_RECV, time(NULL));
 			}
 		} else if (g_str_equal(type, "emote")) {
 			gchar *emote;
-			emote = g_strdup_printf("/me %s", (strchr(message, ' ')?strchr(message, ' '):""));
+			emote = g_strdup_printf("/me %s", (strchr(message, ' ')?strchr(message, ' ')+1:""));
 			serv_got_chat_in(nnc->pc, g_str_hash(to), from, PURPLE_MESSAGE_RECV, emote, time(NULL));
 			g_free(emote);
 		}
 	} else {
 		//Must be a global message. Display in all chats
+		if (g_str_equal(type, "notice"))
+		{
+			//Probably a 'X is AFK' message
+			//>Tarsonis21 is away (AFK due to inactivity)<
+			//>Eion is no longer away.<
+			//Look for all rooms that this buddy is in, and refresh the list
+			purple_util_chrreplace(message, ' ', '\0');
+			chats = purple_get_chats();
+			for (; chats; chats = chats->next)
+			{
+				if (purple_conv_chat_find_user(PURPLE_CONV_CHAT(chats->data), message))
+				{
+					nn_refresh_room(nnc, purple_conversation_get_name(chats->data));
+				}
+			}
+		} else if (g_str_equal(type, "system")) {
+			chats = purple_get_chats();
+			for (; chats; chats = chats->next)
+			{
+				if (purple_conversation_get_account(chats->data) == nnc->account)
+				{
+					serv_got_chat_in(nnc->pc, 
+						purple_conv_chat_get_id(PURPLE_CONV_CHAT(chats->data)),
+						from, PURPLE_MESSAGE_SYSTEM,
+						message, time(NULL));
+				}
+			}
+		}
 	}
 	
 	g_free(message);
