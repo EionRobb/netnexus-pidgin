@@ -369,7 +369,7 @@ nn_cmd_emote(PurpleConversation *conv, const gchar *cmd, gchar **args, gchar **e
 	xmlnode_set_attrib(chatnode, "channel", channel);
 	if (args && args[0])
 	{
-		xmlnode_set_attrib(chatnode, "emote", args[0]);
+		xmlnode_insert_data(chatnode, args[0], -1);
 	}
 	
 	nn_send_xml(pc->proto_data, chatnode);
