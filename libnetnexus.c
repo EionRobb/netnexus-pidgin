@@ -68,6 +68,24 @@ void nn_refresh_room(NetNexusConnection *nnc, const gchar *channel)
 	nn_chat_send(nnc->pc, g_str_hash(channel), "/room", PURPLE_MESSAGE_NO_LOG);
 }
 
+void nn_process_chat(NetNexusConnection *nnc, xmlnode *node)
+{
+	const gchar *success;
+	const gchar *channel;
+	const gchar *error;
+	
+	//<chat success="false" channel="main" error="You do not have permission to mute anyone."/>
+
+	success = xmlnode_get_attrib(node, "success");
+	channel = xmlnode_get_attrib(node, "channel");
+	error = xmlnode_get_attrib(node, "error");
+	
+	if (g_str_equal(success, "false"))
+	{
+		serv_got_chat_in(nnc->pc, g_str_hash(channel), "", PURPLE_MESSAGE_ERROR, error, time(NULL));
+	}
+}
+
 void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 {
 	const gchar *to;
@@ -237,6 +255,8 @@ void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
 		nn_process_message(nnc, node);
 	} else if (g_str_equal(node->name, "state")) {
 		//<state name="Eion" tags="" channels="">Welcome to the netnexus chat room.</state>		
+	} else if (g_str_equal(node->name, "chat")) {
+		nn_process_chat(nnc, node);
 	}
 }
 
