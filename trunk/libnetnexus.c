@@ -257,6 +257,10 @@ void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
 		//<state name="Eion" tags="" channels="">Welcome to the netnexus chat room.</state>		
 	} else if (g_str_equal(node->name, "chat")) {
 		nn_process_chat(nnc, node);
+	} else if (g_str_equal(node->name, "tag")) {
+		purple_prpl_got_account_status(nnc->account, purple_primitive_get_id_from_type(PURPLE_STATUS_AWAY), NULL);
+	} else if (g_str_equal(node->name, "untag")) {
+		purple_prpl_got_account_status(nnc->account, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE), NULL);
 	}
 }
 
@@ -265,7 +269,9 @@ void nn_data_in(gpointer data, gint source, PurpleInputCondition cond)
 	NetNexusConnection *nnc = data;
 	gchar buf[4096];
 	ssize_t len;
+	gchar *chunk;
 	xmlnode *node;
+	size_t chunklen;
 	
 	len = recv(source, buf, sizeof(buf) - 1, 0);
 
@@ -302,15 +308,21 @@ void nn_data_in(gpointer data, gint source, PurpleInputCondition cond)
 	
 	//All data received
 	//parse data
+
+	//xml chunks are split by \0
+	for (len = 0; len < nnc->rx_buf->len; len+=chunklen+1)
+	{
+		chunk = g_strdup(&nnc->rx_buf->str[len]);
+		chunklen = strlen(chunk);
+		purple_debug_info("netnexus", "received: %s\n", chunk);
+		node = xmlnode_from_str(chunk, chunklen);
+		nn_process_xml(nnc, node);
+		xmlnode_free(node);
+		g_free(chunk);
+	}
 	
-	purple_debug_info("netnexus", "received: %s\n", nnc->rx_buf->str);
-	node = xmlnode_from_str(nnc->rx_buf->str, nnc->rx_buf->len);
 	g_string_free(nnc->rx_buf, TRUE);
 	nnc->rx_buf = NULL;
-	
-	nn_process_xml(nnc, node);
-	
-	xmlnode_free(node);
 }
 
 gint nn_char_out(NetNexusConnection *nnc, gchar *message_format, ...)
