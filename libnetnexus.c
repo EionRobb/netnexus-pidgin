@@ -430,31 +430,40 @@ int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessag
 	PurpleConversation *conv;
 	const gchar *name;
 	xmlnode *chatnode;
+	gchar *stripped;
 	
 	conv = purple_find_chat(pc, id);
 	name = purple_conversation_get_name(conv);
+	stripped = purple_markup_strip_html(message);
 	
 	chatnode = xmlnode_new("chat");
 	xmlnode_set_attrib(chatnode, "type", "chat");
 	xmlnode_set_attrib(chatnode, "channel", name);
-	xmlnode_insert_data(chatnode, message, -1);
+	xmlnode_insert_data(chatnode, stripped, -1);
 	
 	//<msg><chat type="chat" channel="help">1</chat></msg>
 	nn_send_xml(pc->proto_data, chatnode);
+	
+	g_free(stripped);
 	
 	return 1;
 }
 
 int nn_send_im (PurpleConnection *pc, const char *who, const char *message, PurpleMessageFlags flags)
 {
+	gchar *stripped;
 	//<whisper to="IronSinew">testing</whisper>
 	xmlnode *whispernode;
 	
+	stripped = purple_markup_strip_html(message);
+	
 	whispernode = xmlnode_new("whisper");
 	xmlnode_set_attrib(whispernode, "to", who);
-	xmlnode_insert_data(whispernode, message, -1);
+	xmlnode_insert_data(whispernode, stripped, -1);
 	
 	nn_send_xml(pc->proto_data, whispernode);
+	
+	g_free(stripped);
 	
 	return 1;
 }
@@ -816,4 +825,4 @@ static PurplePluginInfo info = {
 	NULL
 };
 
-PURPLE_INIT_PLUGIN(okcupid, plugin_init, info);
+PURPLE_INIT_PLUGIN(netnexus, plugin_init, info);
