@@ -281,6 +281,9 @@ void nn_process_xml(NetNexusConnection *nnc, xmlnode *node)
 		purple_prpl_got_account_status(nnc->account, purple_primitive_get_id_from_type(PURPLE_STATUS_AWAY), NULL);
 	} else if (g_str_equal(node->name, "untag")) {
 		purple_prpl_got_account_status(nnc->account, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE), NULL);
+	} else if (g_str_equal(node->name, "close")) {
+		//<close>Reconnecting</close>
+		purple_connection_error_reason(nnc->pc, PURPLE_CONNECTION_ERROR_NAME_IN_USE, _("Server closed the connection."));
 	}
 }
 
