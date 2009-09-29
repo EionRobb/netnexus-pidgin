@@ -150,7 +150,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 			if (purple_utf8_strcasecmp(to, purple_account_get_username(nnc->account)) == 0)
 			{
 				serv_got_im(nnc->pc, from, message, PURPLE_MESSAGE_RECV, time(NULL));
-			} else {
+			} else if (purple_utf8_strcasecmp(from, purple_account_get_username(nnc->account)) != 0) {
 				gchar *wfrom;
 				wfrom = g_strdup_printf("%s to %s", from, to);
 				if (!purple_find_chat(nnc->pc, g_str_hash("whispers")))
