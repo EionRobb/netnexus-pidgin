@@ -150,6 +150,15 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 			if (purple_utf8_strcasecmp(to, purple_account_get_username(nnc->account)) == 0)
 			{
 				serv_got_im(nnc->pc, from, message, PURPLE_MESSAGE_RECV, time(NULL));
+			} else {
+				gchar *wfrom;
+				wfrom = g_strdup_printf("%s to %s", from, to);
+				if (!purple_find_chat(nnc->pc, g_str_hash("whispers")))
+				{
+					serv_got_joined_chat(nnc->pc, g_str_hash("whispers"), "whispers");
+				}
+				serv_got_chat_in(nnc->pc, g_str_hash("whispers"), wfrom, PURPLE_MESSAGE_RECV, message, time(NULL));
+				g_free(wfrom);
 			}
 		} else if (g_str_equal(type, "emote")) {
 			gchar *emote;
