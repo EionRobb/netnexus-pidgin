@@ -110,7 +110,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 {
 	const gchar *to;
 	const gchar *from;
-	gchar *message;
+	gchar *message, *escaped;
 	const gchar *type;
 	const gchar *success;
 	const gchar *error;
@@ -127,7 +127,10 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	to = xmlnode_get_attrib(node, "to");
 	from = xmlnode_get_attrib(node, "from");
 	success = xmlnode_get_attrib(node, "success");
-	message = xmlnode_get_data_unescaped(node);
+	message = xmlnode_get_data(node);
+	escaped = g_markup_escape_text(message, -1);
+	g_free(message);
+	message = escaped;
 	
 	if (success && g_str_equal(success, "false"))
 	{
