@@ -127,7 +127,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	to = xmlnode_get_attrib(node, "to");
 	from = xmlnode_get_attrib(node, "from");
 	success = xmlnode_get_attrib(node, "success");
-	message = xmlnode_get_data(node);
+	message = xmlnode_get_data_unescaped(node);
 	
 	if (success && g_str_equal(success, "false"))
 	{
