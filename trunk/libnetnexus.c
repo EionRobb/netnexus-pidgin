@@ -79,6 +79,7 @@ typedef struct _NetNexusConnection {
 	GString *rx_buf;
 	
 	PurpleUtilFetchUrlData *login_conn;
+	PurpleRoomlist *roomlist;
 } NetNexusConnection;
 
 int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags);
@@ -114,7 +115,10 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	const gchar *type;
 	const gchar *success;
 	const gchar *error;
+	gchar **rooms;
+	PurpleRoomlistRoom *room;
 	GList *chats;
+	int i;
 	
 	//<message type='notice' to='main' from='' tags=''>You have joined channel main</message>
 	//<message type='chat' to='main' from='PFC-Hepburn' tags='vip'>bleep</message>
@@ -122,6 +126,7 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 	//<message type='emote' to='main' from='IronSinew' tags='admin'>IronSinew emotes</message>
 	//<message type='notice' to='' from='' tags=''>Tarsonis21 is away (AFK due to inactivity)</message>
 	//<message type='system' to='' from='' tags=''>system message for Eion</message>
+	//<message type='notice' to='' from='' tags=''>Channel list: battleship, help, lemonade, main, nations, terranlegacy, war2</message>
 	
 	type = xmlnode_get_attrib(node, "type");
 	to = xmlnode_get_attrib(node, "to");
@@ -173,17 +178,30 @@ void nn_process_message(NetNexusConnection *nnc, xmlnode *node)
 		//Must be a global message. Display in all chats
 		if (g_str_equal(type, "notice"))
 		{
-			//Probably a 'X is AFK' message
-			//>Tarsonis21 is away (AFK due to inactivity)<
-			//>Eion is no longer away.<
-			//Look for all rooms that this buddy is in, and refresh the list
-			purple_util_chrreplace(message, ' ', '\0');
-			chats = purple_get_chats();
-			for (; chats; chats = chats->next)
+			if (g_str_has_prefix(message, "Channel list: "))
 			{
-				if (purple_conv_chat_find_user(PURPLE_CONV_CHAT(chats->data), message))
+				//A roomlist! *gasp*
+				rooms = g_strsplit(&message[14], ", ", 0);
+				for(i=0; rooms[i]; i++)
 				{
-					nn_refresh_room(nnc, purple_conversation_get_name(chats->data));
+					room = purple_roomlist_room_new(PURPLE_ROOMLIST_ROOMTYPE_ROOM, rooms[i], NULL);
+					purple_roomlist_room_add_field(nnc->roomlist, room, rooms[i]);
+					purple_roomlist_room_add(nnc->roomlist, room);
+				}
+				purple_roomlist_set_in_progress(nnc->roomlist, FALSE);
+			} else {
+				//Probably a 'X is AFK' message
+				//>Tarsonis21 is away (AFK due to inactivity)<
+				//>Eion is no longer away.<
+				//Look for all rooms that this buddy is in, and refresh the list
+				purple_util_chrreplace(message, ' ', '\0');
+				chats = purple_get_chats();
+				for (; chats; chats = chats->next)
+				{
+					if (purple_conv_chat_find_user(PURPLE_CONV_CHAT(chats->data), message))
+					{
+						nn_refresh_room(nnc, purple_conversation_get_name(chats->data));
+					}
 				}
 			}
 		} else if (g_str_equal(type, "system")) {
@@ -386,6 +404,16 @@ gint nn_xml_out(NetNexusConnection *nnc, xmlnode *node)
 	return ret;
 }
 
+void nn_get_info(PurpleConnection *pc, const gchar *username)
+{
+
+}
+
+void nn_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group)
+{
+
+}
+
 void nn_set_status(PurpleAccount *account, PurpleStatus *status)
 {
 	
@@ -503,9 +531,51 @@ int nn_send_im (PurpleConnection *pc, const char *who, const char *message, Purp
 	return 1;
 }
 
-PurpleRoomlist *nn_get_roomlist(PurpleConnection *gc)
+PurpleRoomlist *nn_get_roomlist(PurpleConnection *pc)
 {
+	PurpleRoomlistField *f;
+	GList *fields = NULL;
+	NetNexusConnection *nnc;
+	xmlnode *node;
 	
+	nnc = pc->proto_data;
+	if (nnc->roomlist)
+		purple_roomlist_unref(nnc->roomlist);
+	
+	nnc->roomlist = purple_roomlist_new(purple_connection_get_account(pc));
+	
+	f = purple_roomlist_field_new(PURPLE_ROOMLIST_FIELD_STRING, "", "channel", TRUE);
+	fields = g_list_append(fields, f);
+	
+	purple_roomlist_set_fields(nnc->roomlist, fields);
+	
+	node = xmlnode_new("chat");
+	xmlnode_set_attrib(node, "type", "chat");
+	xmlnode_set_attrib(node, "channel", "main");
+	xmlnode_insert_data(node, "/channel", -1);
+
+	nn_send_xml(nnc, node);	
+	purple_roomlist_set_in_progress(nnc->roomlist, TRUE);
+	
+	return nnc->roomlist;
+}
+
+static void nn_roomlist_cancel(PurpleRoomlist *list)
+{
+	NetNexusConnection *nnc;
+	PurpleConnection *pc;
+	
+	pc = purple_account_get_connection(list->account);
+	if (pc == NULL)
+		return;
+	
+	nnc = pc->proto_data;
+	
+	purple_roomlist_set_in_progress(list, FALSE);
+	if (nnc->roomlist == list) {
+		nnc->roomlist = NULL;
+		purple_roomlist_unref(list);
+	}
 }
 
 void nn_ping(PurpleConnection *pc)
@@ -527,7 +597,6 @@ void nn_ping(PurpleConnection *pc)
 	
 	g_free(timestamp_char);
 }
-
 
 GList *
 nn_chat_info(PurpleConnection *pc)
@@ -777,11 +846,11 @@ static PurplePluginProtocolInfo prpl_info = {
 	nn_send_im,             /* send_im */
 	NULL,                   /* set_info */
 	NULL,                   /* send_typing */
-	NULL,                   /* get_info */
+	nn_get_info,            /* get_info */
 	nn_set_status,          /* set_status */
 	NULL,                   /* set_idle */
 	NULL,                   /* change_passwd */
-	NULL,                   /* add_buddy */
+	nn_add_buddy,           /* add_buddy */
 	NULL,                   /* add_buddies */
 	NULL,                   /* remove_buddy */
 	NULL,                   /* remove_buddies */
@@ -813,7 +882,7 @@ static PurplePluginProtocolInfo prpl_info = {
 	NULL,                   /* set_chat_topic */
 	NULL,                   /* find_blist_chat */
 	nn_get_roomlist,        /* roomlist_get_list */
-	NULL,                   /* roomlist_cancel */
+	nn_roomlist_cancel,     /* roomlist_cancel */
 	NULL,                   /* roomlist_expand_category */
 	NULL,                   /* can_receive_file */
 	NULL,                   /* send_file */
