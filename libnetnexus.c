@@ -426,7 +426,7 @@ void nn_send_xml(NetNexusConnection *nnc, xmlnode *node)//, PurpleCallback *call
 	{
 		xmlnode *root = xmlnode_new("msg");
 		xmlnode_insert_child(root, node);
-		returnint = nn_char_out(nnc, xmlnode_to_str(root, NULL));
+		returnint = nn_char_out(nnc, "%s", xmlnode_to_str(root, NULL));
 		root->child = NULL;
 		root->lastchild = NULL;
 		xmlnode_free(root);
