@@ -82,6 +82,12 @@ typedef struct _NetNexusConnection {
 	PurpleRoomlist *roomlist;
 } NetNexusConnection;
 
+typedef struct _NetNexusBuddy {
+	PurpleBuddy *buddy;
+	
+	gchar *icon_url;
+} NetNexusBuddy;
+
 int nn_chat_send(PurpleConnection *pc, int id, const char *message, PurpleMessageFlags flags);
 
 void nn_refresh_room(NetNexusConnection *nnc, const gchar *channel)
@@ -404,19 +410,60 @@ gint nn_xml_out(NetNexusConnection *nnc, xmlnode *node)
 	return ret;
 }
 
+void nn_got_icon(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
+{
+	NetNexusBuddy *nnbuddy = user_data;
+	PurpleBuddy *buddy = nnbuddy->buddy;
+	gpointer buddy_icon_data;
+	
+	buddy_icon_data = g_memdup(url_text, len);
+
+	purple_buddy_icons_set_for_user(buddy->account, buddy->name,
+			buddy_icon_data, len, nnbuddy->icon_url);
+	
+	g_free(nnbuddy->icon_url);
+	g_free(nnbuddy);
+}
+
 void nn_get_info_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
 {
-	PurpleConnection *pc = user_data;
+	PurpleBuddy *buddy = user_data;
+	xmlnode *response, *node;
+	gchar *icon_url;
+	PurpleBuddyIcon *icon;
+	NetNexusBuddy *nnbuddy;
+
 	purple_debug_info("netnexus", "got info data %s\n", (url_text?url_text:"(null)"));
+
+	response = xmlnode_from_str(url_text, len);
+	node = xmlnode_get_child(response, "icon");
+	node = xmlnode_get_child(node, "x32");
+	
+	icon_url = xmlnode_get_data_unescaped(node);
+	
+	icon = purple_buddy_icons_find(buddy->account, buddy->name);
+	if(icon == NULL || icon_url != purple_buddy_icon_get_checksum(icon))
+	{
+		nnbuddy = g_new(NetNexusBuddy, 1);
+		nnbuddy->buddy = buddy;
+		nnbuddy->icon_url = g_strdup(icon_url);
+		purple_util_fetch_url(icon_url, TRUE, NULL, TRUE, nn_got_icon, nnbuddy);
+	}
+	
+	g_free(icon_url);
+	xmlnode_free(response);
 }
 
 void nn_get_info(PurpleConnection *pc, const gchar *username)
 {
 	gchar *url;
+	PurpleBuddy *buddy;
+	
+	buddy = purple_find_buddy(pc->account, username);
 
 	/* http://ugp.netnexus.com/games/babbleon/external.php?user=tbrown&task=icon" */
 	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=icon&user=%s", purple_url_encode(username));
-	purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_get_info_cb, pc);
+	purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_get_info_cb, buddy);
 	
 	g_free(url);
 }
@@ -859,8 +906,7 @@ static PurplePluginProtocolInfo prpl_info = {
 
 	NULL,                   /* user_splits */
 	NULL,                   /* protocol_options */
-	NO_BUDDY_ICONS          /* icon_spec */
-	/*{"jpg", 0, 0, 50, 50, -1, PURPLE_ICON_SCALE_SEND}*/, /* icon_spec */
+	{"gif", 32, 32, 32, 32, 12500, PURPLE_ICON_SCALE_SEND}, /* icon_spec */
 	nn_list_icon,           /* list_icon */
 	NULL,                   /* list_emblems */
 	NULL,                   /* status_text */
