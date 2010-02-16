@@ -404,19 +404,47 @@ gint nn_xml_out(NetNexusConnection *nnc, xmlnode *node)
 	return ret;
 }
 
+void nn_get_info_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const gchar *url_text, gsize len, const gchar *error_message)
+{
+	PurpleConnection *pc = user_data;
+	purple_debug_info("netnexus", "got info data %s\n", (url_text?url_text:"(null)"));
+}
+
 void nn_get_info(PurpleConnection *pc, const gchar *username)
 {
+	gchar *url;
 
+	/* http://ugp.netnexus.com/games/babbleon/external.php?user=tbrown&task=icon" */
+	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=icon&user=%s", purple_url_encode(username));
+	purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_get_info_cb, pc);
+	
+	g_free(url);
 }
 
 void nn_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group)
 {
-
+	NetNexusConnection *nnc;
+	
+	nnc = pc->proto_data;
+	/* Hopefully they're in main */
+	nn_refresh_room(nnc, "main");
 }
 
 void nn_set_status(PurpleAccount *account, PurpleStatus *status)
 {
+	PurpleStatus *current_status;
+	PurpleConnection *pc;
 	
+	pc = purple_account_get_connection(account);
+	if (pc == NULL)
+		return;
+	
+	current_status = purple_account_get_active_status(account);
+	if (purple_status_is_available(current_status) !=
+		purple_status_is_available(status))
+	{
+		nn_chat_send(pc, g_str_hash("main"), "/afk", PURPLE_MESSAGE_NO_LOG);	
+	}
 }
 
 void nn_send_xml(NetNexusConnection *nnc, xmlnode *node)//, PurpleCallback *callback, gpointer data)
