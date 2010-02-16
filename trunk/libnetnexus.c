@@ -436,8 +436,7 @@ void nn_get_info_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const 
 	purple_debug_info("netnexus", "got info data %s\n", (url_text?url_text:"(null)"));
 
 	response = xmlnode_from_str(url_text, len);
-	node = xmlnode_get_child(response, "icon");
-	node = xmlnode_get_child(node, "x32");
+	node = xmlnode_get_child(response, "x32");
 	
 	icon_url = xmlnode_get_data_unescaped(node);
 	
@@ -454,18 +453,26 @@ void nn_get_info_cb(PurpleUtilFetchUrlData *url_data, gpointer user_data, const 
 	xmlnode_free(response);
 }
 
-void nn_get_info(PurpleConnection *pc, const gchar *username)
+void nn_check_icon(PurpleBuddy *buddy)
 {
 	gchar *url;
-	PurpleBuddy *buddy;
-	
-	buddy = purple_find_buddy(pc->account, username);
 
+	if (buddy == NULL)
+		return;
+	
 	/* http://ugp.netnexus.com/games/babbleon/external.php?user=tbrown&task=icon" */
-	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=icon&user=%s", purple_url_encode(username));
+	url = g_strdup_printf("http://ugp.netnexus.com/games/babbleon/external.php?task=icon&user=%s", purple_url_encode(buddy->name));
 	purple_util_fetch_url(url, TRUE, NULL, TRUE, nn_get_info_cb, buddy);
 	
 	g_free(url);
+}
+
+void nn_get_info(PurpleConnection *pc, const gchar *username)
+{
+	PurpleBuddy *buddy;
+	
+	buddy = purple_find_buddy(pc->account, username);
+	nn_check_icon(buddy);
 }
 
 void nn_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group)
@@ -473,8 +480,10 @@ void nn_add_buddy(PurpleConnection *pc, PurpleBuddy *buddy, PurpleGroup *group)
 	NetNexusConnection *nnc;
 	
 	nnc = pc->proto_data;
-	/* Hopefully they're in main */
+	/* Update AFK status.  Hopefully they're in main */
 	nn_refresh_room(nnc, "main");
+	/* Download a buddy icon */
+	nn_check_icon(buddy);
 }
 
 void nn_set_status(PurpleAccount *account, PurpleStatus *status)
