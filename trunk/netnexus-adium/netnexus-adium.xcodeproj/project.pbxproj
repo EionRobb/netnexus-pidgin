@@ -1,0 +1,332 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7A5992BB10644F9200A68E5C /* libnetnexus.c in Sources */ = {isa = PBXBuildFile; fileRef = 7A5992BA10644F9200A68E5C /* libnetnexus.c */; };
+		7A5992FB10644FE200A68E5C /* Adium.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A5992F910644FE200A68E5C /* Adium.framework */; };
+		7A5992FC10644FE200A68E5C /* AdiumLibpurple.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A5992FA10644FE200A68E5C /* AdiumLibpurple.framework */; };
+		7A5993871064501700A68E5C /* libglib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A5993841064501700A68E5C /* libglib.framework */; };
+		7A5993881064501700A68E5C /* libpurple.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A5993851064501700A68E5C /* libpurple.framework */; };
+		7A5993901064503A00A68E5C /* NetnexusPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A59938F1064503A00A68E5C /* NetnexusPlugin.m */; };
+		7A5994251064632A00A68E5C /* NetnexusAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A5993961064524A00A68E5C /* NetnexusAccountViewController.m */; };
+		7A5994261064632B00A68E5C /* NetnexusAccount.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A5993941064519200A68E5C /* NetnexusAccount.m */; };
+		7A5994271064632D00A68E5C /* NetnexusService.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A5993921064509F00A68E5C /* NetnexusService.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		32DBCF630370AF2F00C91783 /* netnexus-adium_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "netnexus-adium_Prefix.pch"; sourceTree = "<group>"; };
+		7A5992BA10644F9200A68E5C /* libnetnexus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = libnetnexus.c; path = ../libnetnexus.c; sourceTree = SOURCE_ROOT; };
+		7A5992F910644FE200A68E5C /* Adium.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Adium.framework; path = ../../adium/build/Release/Adium.framework; sourceTree = SOURCE_ROOT; };
+		7A5992FA10644FE200A68E5C /* AdiumLibpurple.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdiumLibpurple.framework; path = ../../adium/build/Release/AdiumLibpurple.framework; sourceTree = SOURCE_ROOT; };
+		7A5993841064501700A68E5C /* libglib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libglib.framework; path = ../../adium/Frameworks/libglib.framework; sourceTree = SOURCE_ROOT; };
+		7A5993851064501700A68E5C /* libpurple.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libpurple.framework; path = ../../adium/Frameworks/libpurple.framework; sourceTree = SOURCE_ROOT; };
+		7A59938E1064503A00A68E5C /* NetnexusPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetnexusPlugin.h; sourceTree = "<group>"; };
+		7A59938F1064503A00A68E5C /* NetnexusPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetnexusPlugin.m; sourceTree = "<group>"; };
+		7A5993911064509F00A68E5C /* NetnexusService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetnexusService.h; sourceTree = "<group>"; };
+		7A5993921064509F00A68E5C /* NetnexusService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetnexusService.m; sourceTree = "<group>"; };
+		7A5993931064519200A68E5C /* NetnexusAccount.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetnexusAccount.h; sourceTree = "<group>"; };
+		7A5993941064519200A68E5C /* NetnexusAccount.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetnexusAccount.m; sourceTree = "<group>"; };
+		7A5993951064524A00A68E5C /* NetnexusAccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetnexusAccountViewController.h; sourceTree = "<group>"; };
+		7A5993961064524A00A68E5C /* NetnexusAccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetnexusAccountViewController.m; sourceTree = "<group>"; };
+		8D5B49B6048680CD000E48DA /* Netnexus.AdiumPlugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Netnexus.AdiumPlugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A5992FB10644FE200A68E5C /* Adium.framework in Frameworks */,
+				7A5992FC10644FE200A68E5C /* AdiumLibpurple.framework in Frameworks */,
+				7A5993871064501700A68E5C /* libglib.framework in Frameworks */,
+				7A5993881064501700A68E5C /* libpurple.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* netnexus-adium */ = {
+			isa = PBXGroup;
+			children = (
+				7A5992BA10644F9200A68E5C /* libnetnexus.c */,
+				32C88E010371C26100C91783 /* Other Sources */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+				7A59938E1064503A00A68E5C /* NetnexusPlugin.h */,
+				7A59938F1064503A00A68E5C /* NetnexusPlugin.m */,
+				7A5993911064509F00A68E5C /* NetnexusService.h */,
+				7A5993921064509F00A68E5C /* NetnexusService.m */,
+				7A5993931064519200A68E5C /* NetnexusAccount.h */,
+				7A5993941064519200A68E5C /* NetnexusAccount.m */,
+				7A5993951064524A00A68E5C /* NetnexusAccountViewController.h */,
+				7A5993961064524A00A68E5C /* NetnexusAccountViewController.m */,
+			);
+			name = "netnexus-adium";
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */,
+				1058C7AEFEA557BF11CA2CBB /* Other Frameworks */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7A5993841064501700A68E5C /* libglib.framework */,
+				7A5993851064501700A68E5C /* libpurple.framework */,
+				7A5992F910644FE200A68E5C /* Adium.framework */,
+				7A5992FA10644FE200A68E5C /* AdiumLibpurple.framework */,
+				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7AEFEA557BF11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* Netnexus.AdiumPlugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		32C88E010371C26100C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32DBCF630370AF2F00C91783 /* netnexus-adium_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* netnexus-adium */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "netnexus-adium" */;
+			buildPhases = (
+				8D5B49AF048680CD000E48DA /* Resources */,
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+				7A5993A61064542900A68E5C /* Fix libpurple lookups */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "netnexus-adium";
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = "netnexus-adium";
+			productReference = 8D5B49B6048680CD000E48DA /* Netnexus.AdiumPlugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "netnexus-adium" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 089C166AFE841209C02AAC07 /* netnexus-adium */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* netnexus-adium */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D5B49AF048680CD000E48DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7A5993A61064542900A68E5C /* Fix libpurple lookups */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Fix libpurple lookups";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#Make this change for every new version of libpurple in Adium source\n/Developer/usr/bin/install_name_tool -change \"@executable_path/../Frameworks/libpurple.framework/Versions/0.6.0/libpurple\" \"@executable_path/../Frameworks/libpurple.framework/libpurple\" \"$TARGET_BUILD_DIR/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS/$PRODUCT_NAME\"\n\n#this needs to be updated for every new version of glib in Adium\n/Developer/usr/bin/install_name_tool -change \"@executable_path/../Frameworks/libglib.framework/Versions/2.0.0/libglib\" \"@executable_path/../Frameworks/libglib.framework/libglib\" \"$TARGET_BUILD_DIR/$PRODUCT_NAME.$WRAPPER_EXTENSION/Contents/MacOS/$PRODUCT_NAME\"";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A5992BB10644F9200A68E5C /* libnetnexus.c in Sources */,
+				7A5993901064503A00A68E5C /* NetnexusPlugin.m in Sources */,
+				7A5994251064632A00A68E5C /* NetnexusAccountViewController.m in Sources */,
+				7A5994261064632B00A68E5C /* NetnexusAccount.m in Sources */,
+				7A5994271064632D00A68E5C /* NetnexusService.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB913B08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					i386,
+					ppc,
+					x86_64,
+				);
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/adium/Frameworks",
+					"$(HOME)/adium/Build/Release",
+					"\"$(SRCROOT)/../../adium/build/Release\"",
+				);
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_MODEL_TUNING = G4;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "netnexus-adium_Prefix.pch";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/adium/Frameworks/libpurple.framework/Headers",
+					"$(HOME)/adium/Frameworks/libglib.framework/Headers",
+					"$(HOME)/adium/build",
+					"$(HOME)/adium/Frameworks/libintl.framework/Headers",
+					"$(HOME)/adium/build/Release/AdiumLibpurple.framework/Headers",
+				);
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "\"$(HOME)/Library/Application Support/Adium 2.0/PlugIns/\"";
+				LD_GENERATE_MAP_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_CFLAGS = "-DPURPLE_STATIC_PRPL";
+				OTHER_LDFLAGS = (
+					"-undefined",
+					dynamic_lookup,
+					"-weak_framework",
+					libglib,
+					"-weak_framework",
+					libpurple,
+					"-flat_namespace",
+				);
+				PRODUCT_NAME = Netnexus;
+				STRIP_STYLE = all;
+				VALID_ARCHS = "i386 ppc x86_64";
+				WRAPPER_EXTENSION = AdiumPlugin;
+			};
+			name = Debug;
+		};
+		1DEB913C08733D840010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../adium/build/Release\"",
+					"\"$(SRCROOT)/../../adium/Frameworks\"",
+				);
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "netnexus-adium_Prefix.pch";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				PRODUCT_NAME = "netnexus-adium";
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
+		};
+		1DEB913F08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		1DEB914008733D840010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "netnexus-adium" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913B08733D840010E9CD /* Debug */,
+				1DEB913C08733D840010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "netnexus-adium" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913F08733D840010E9CD /* Debug */,
+				1DEB914008733D840010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

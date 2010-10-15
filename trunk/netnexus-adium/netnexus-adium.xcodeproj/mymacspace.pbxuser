@@ -1,0 +1,310 @@
+// !$*UTF8*$!
+{
+	089C1669FE841209C02AAC07 /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeTarget = 8D5B49AC048680CD000E48DA /* netnexus-adium */;
+		addToTargets = (
+			8D5B49AC048680CD000E48DA /* netnexus-adium */,
+		);
+		codeSenseManager = 7A5992AE10644D3600A68E5C /* Code sense */;
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					181,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXConfiguration.PBXTargetDataSource.PBXTargetDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					141,
+					60,
+					20,
+					48,
+					43,
+					43,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXTargetDataSource_PrimaryAttribute,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 287487566;
+			PBXWorkspaceStateSaveDate = 287487566;
+		};
+		perUserProjectItems = {
+			7A5993A81064542F00A68E5C /* PlistBookmark */ = 7A5993A81064542F00A68E5C /* PlistBookmark */;
+			7A59942B1064635000A68E5C /* PBXTextBookmark */ = 7A59942B1064635000A68E5C /* PBXTextBookmark */;
+			7A59942C1064635000A68E5C /* PBXTextBookmark */ = 7A59942C1064635000A68E5C /* PBXTextBookmark */;
+			7A59942D1064635000A68E5C /* PBXTextBookmark */ = 7A59942D1064635000A68E5C /* PBXTextBookmark */;
+			7A59942E1064635000A68E5C /* PBXTextBookmark */ = 7A59942E1064635000A68E5C /* PBXTextBookmark */;
+			7A59942F1064635000A68E5C /* PBXTextBookmark */ = 7A59942F1064635000A68E5C /* PBXTextBookmark */;
+			7A5994301064635000A68E5C /* PBXTextBookmark */ = 7A5994301064635000A68E5C /* PBXTextBookmark */;
+			7A5994311064635000A68E5C /* PBXTextBookmark */ = 7A5994311064635000A68E5C /* PBXTextBookmark */;
+			7A5994321064635000A68E5C /* PBXTextBookmark */ = 7A5994321064635000A68E5C /* PBXTextBookmark */;
+			7A59945F106469A600A68E5C /* PBXTextBookmark */ = 7A59945F106469A600A68E5C /* PBXTextBookmark */;
+			7AC750EF1122B6C800659758 /* PBXTextBookmark */ = 7AC750EF1122B6C800659758 /* PBXTextBookmark */;
+			7AC750F51122B7B000659758 /* PBXTextBookmark */ = 7AC750F51122B7B000659758 /* PBXTextBookmark */;
+			7AC7512B1122BCD800659758 /* PBXTextBookmark */ = 7AC7512B1122BCD800659758 /* PBXTextBookmark */;
+		};
+		sourceControlManager = 7A5992AD10644D3600A68E5C /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	32DBCF630370AF2F00C91783 /* netnexus-adium_Prefix.pch */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {618, 516}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 160}";
+		};
+	};
+	7A5992AD10644D3600A68E5C /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	7A5992AE10644D3600A68E5C /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	7A5992BA10644F9200A68E5C /* libnetnexus.c */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {712, 12610}}";
+			sepNavSelRange = "{12780, 0}";
+			sepNavVisRange = "{12281, 865}";
+		};
+	};
+	7A59938E1064503A00A68E5C /* NetnexusPlugin.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {359, 516}}";
+			sepNavSelRange = "{81, 0}";
+			sepNavVisRange = "{0, 89}";
+		};
+	};
+	7A59938F1064503A00A68E5C /* NetnexusPlugin.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {359, 516}}";
+			sepNavSelRange = "{241, 0}";
+			sepNavVisRange = "{0, 384}";
+			sepNavWindowFrame = "{{110, 394}, {584, 458}}";
+		};
+	};
+	7A5993911064509F00A68E5C /* NetnexusService.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {359, 516}}";
+			sepNavSelRange = "{70, 0}";
+			sepNavVisRange = "{0, 126}";
+		};
+	};
+	7A5993921064509F00A68E5C /* NetnexusService.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {414, 1358}}";
+			sepNavSelRange = "{999, 0}";
+			sepNavVisRange = "{989, 778}";
+		};
+	};
+	7A5993931064519200A68E5C /* NetnexusAccount.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {360, 516}}";
+			sepNavSelRange = "{237, 0}";
+			sepNavVisRange = "{0, 249}";
+		};
+	};
+	7A5993941064519200A68E5C /* NetnexusAccount.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {738, 882}}";
+			sepNavSelRange = "{179, 0}";
+			sepNavVisRange = "{403, 770}";
+			sepNavWindowFrame = "{{133, 372}, {584, 458}}";
+		};
+	};
+	7A5993951064524A00A68E5C /* NetnexusAccountViewController.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {420, 516}}";
+			sepNavSelRange = "{272, 0}";
+			sepNavVisRange = "{0, 284}";
+		};
+	};
+	7A5993961064524A00A68E5C /* NetnexusAccountViewController.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {360, 516}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 258}";
+		};
+	};
+	7A5993A81064542F00A68E5C /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D5B49B7048680CD000E48DA /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+			NSPrincipalClass,
+		);
+		name = "/Users/mymacspace/netnexus-pidgin/netnexus-adium/Info.plist";
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	7A59942B1064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A59938E1064503A00A68E5C /* NetnexusPlugin.h */;
+		name = "NetnexusPlugin.h: 6";
+		rLen = 0;
+		rLoc = 81;
+		rType = 0;
+		vrLen = 89;
+		vrLoc = 0;
+	};
+	7A59942C1064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A59938F1064503A00A68E5C /* NetnexusPlugin.m */;
+		name = "NetnexusPlugin.m: 11";
+		rLen = 0;
+		rLoc = 241;
+		rType = 0;
+		vrLen = 384;
+		vrLoc = 0;
+	};
+	7A59942D1064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993911064509F00A68E5C /* NetnexusService.h */;
+		name = "NetnexusService.h: 4";
+		rLen = 0;
+		rLoc = 70;
+		rType = 0;
+		vrLen = 126;
+		vrLoc = 0;
+	};
+	7A59942E1064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993921064509F00A68E5C /* NetnexusService.m */;
+		name = "NetnexusService.m: 61";
+		rLen = 0;
+		rLoc = 999;
+		rType = 0;
+		vrLen = 778;
+		vrLoc = 989;
+	};
+	7A59942F1064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993931064519200A68E5C /* NetnexusAccount.h */;
+		name = "NetnexusAccount.h: 12";
+		rLen = 0;
+		rLoc = 237;
+		rType = 0;
+		vrLen = 249;
+		vrLoc = 0;
+	};
+	7A5994301064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993941064519200A68E5C /* NetnexusAccount.m */;
+		name = "NetnexusAccount.m: 9";
+		rLen = 0;
+		rLoc = 179;
+		rType = 0;
+		vrLen = 770;
+		vrLoc = 403;
+	};
+	7A5994311064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993961064524A00A68E5C /* NetnexusAccountViewController.m */;
+		name = "NetnexusAccountViewController.m: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 258;
+		vrLoc = 0;
+	};
+	7A5994321064635000A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5993951064524A00A68E5C /* NetnexusAccountViewController.h */;
+		name = "NetnexusAccountViewController.h: 12";
+		rLen = 0;
+		rLoc = 272;
+		rType = 0;
+		vrLen = 284;
+		vrLoc = 0;
+	};
+	7A59945F106469A600A68E5C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 32DBCF630370AF2F00C91783 /* netnexus-adium_Prefix.pch */;
+		name = "netnexus-adium_Prefix.pch: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 160;
+		vrLoc = 0;
+	};
+	7AC750EF1122B6C800659758 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5992BA10644F9200A68E5C /* libnetnexus.c */;
+		name = "libnetnexus.c: 454";
+		rLen = 0;
+		rLoc = 13369;
+		rType = 0;
+		vrLen = 1074;
+		vrLoc = 14041;
+	};
+	7AC750F11122B6C800659758 /* AIAdiumProtocol.h */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = sourcecode.c.h;
+		name = AIAdiumProtocol.h;
+		path = /Users/mymacspace/adium/Build/Release/Adium.framework/Headers/AIAdiumProtocol.h;
+		sourceTree = "<absolute>";
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {824, 1690}}";
+			sepNavSelRange = "{1516, 0}";
+			sepNavVisRange = "{1101, 910}";
+		};
+	};
+	7AC750F51122B7B000659758 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7AC750F11122B6C800659758 /* AIAdiumProtocol.h */;
+		name = "AIAdiumProtocol.h: 35";
+		rLen = 0;
+		rLoc = 1516;
+		rType = 0;
+		vrLen = 1756;
+		vrLoc = 0;
+	};
+	7AC7512B1122BCD800659758 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7A5992BA10644F9200A68E5C /* libnetnexus.c */;
+		name = "libnetnexus.c: 429";
+		rLen = 0;
+		rLoc = 12780;
+		rType = 0;
+		vrLen = 865;
+		vrLoc = 12281;
+	};
+	8D5B49AC048680CD000E48DA /* netnexus-adium */ = {
+		activeExec = 0;
+	};
+}
