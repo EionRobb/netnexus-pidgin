@@ -1,0 +1,1 @@
+This is a prpl protocol plugin for libpurple to connect to NetNexus.com's chat service
